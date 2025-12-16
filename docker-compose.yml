@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
     depends_on:
       - openobserve
-    command: ["vector", "--config", "/etc/vector/vector.yml"]
+    command: ["--config", "/etc/vector/vector.yml"]
     networks:
       - hf_svc_openobserve
     volumes:
