@@ -7,17 +7,7 @@ transforms:
   exclude_opted_out:
     type: filter
     inputs: [docker_logs]
-    condition: >
-      !(
-        exists(.container_labels.openobserve_exclude) &&
-        (
-          .container_labels.openobserve_exclude == "true" ||
-          .container_labels.openobserve_exclude == "True" ||
-          .container_labels.openobserve_exclude == true
-        )
-      ) &&
-      .container_name != "vector" &&
-      .container_name != "openobserve"
+    condition: '!(exists(.container_labels.openobserve_exclude) && (.container_labels.openobserve_exclude == "true" || .container_labels.openobserve_exclude == "True" || .container_labels.openobserve_exclude == true)) && .container_name != "vector" && .container_name != "openobserve"'
 
   enrich:
     type: remap
