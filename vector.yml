@@ -7,19 +7,24 @@ transforms:
   exclude_opted_out:
     type: filter
     inputs: [docker_logs]
-    # Keep everything unless the container label openobserve_exclude == "true"
-    # Also exclude the collector containers themselves.
-    condition: '!((exists(.container_labels.openobserve_exclude) && downcase(to_string(.container_labels.openobserve_exclude)) == "true")) && .container_name != "vector" && .container_name != "openobserve"'
+    condition: >
+      !(
+        exists(.container_labels.openobserve_exclude) &&
+        (
+          .container_labels.openobserve_exclude == "true" ||
+          .container_labels.openobserve_exclude == "True" ||
+          .container_labels.openobserve_exclude == true
+        )
+      ) &&
+      .container_name != "vector" &&
+      .container_name != "openobserve"
 
   enrich:
     type: remap
     inputs: [exclude_opted_out]
     source: |
-      service = get(.container_labels, ["com.docker.compose.service"]) ?? .container_name
-      project = get(.container_labels, ["com.docker.compose.project"]) ?? null
-
-      .service = service
-      .compose_project = project
+      .service = get(.container_labels, ["com.docker.compose.service"]) ?? .container_name
+      .compose_project = get(.container_labels, ["com.docker.compose.project"]) ?? null
       .host = get_hostname!()
 
 sinks:
