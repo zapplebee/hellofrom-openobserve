@@ -16,10 +16,10 @@ services:
       - hf_svc_openobserve
     labels:
       - traefik.enable=true
-      - traefik.docker.network=hf_svc_keycloak
+      - traefik.docker.network=hf_svc_openobserve
+      - traefik.http.services.openobserve.loadbalancer.server.port=5080
+      - traefik.http.routers.openobserve.middlewares=hf-localonly@docker
 
-      # Keycloak internal port
-      - traefik.http.services.keycloak.loadbalancer.server.port=5080
       - traefik.http.routers.openobserve.rule=Host(`openobserve.hellofrom.app`)
       - traefik.http.routers.openobserve.entrypoints=websecure
       - traefik.http.routers.openobserve.tls=true
@@ -38,9 +38,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./vector.yaml:/etc/vector/vector.yaml:ro
-
-volumes:
-  openobserve-data: {}
 
 networks:
   hf_svc_openobserve:
