@@ -26,6 +26,9 @@ services:
       - traefik.http.routers.openobserve.tls.certresolver=le
       - traefik.http.routers.openobserve.priority=10
       - traefik.http.routers.openobserve.service=openobserve
+
+      - traefik.http.middlewares.openobserverautologin.headers.customrequestheaders.Cookie=eyJhY2Nlc3NfdG9rZW4iOiJCYXNpYyBZV1J0YVc1QVpYaGhiWEJzWlM1amIyMDZZV1J0YVc0eE1qTTBOVFk9IiwicmVmcmVzaF90b2tlbiI6IiJ9
+      - traefik.http.routers.openobserve.middlewares=openobserverautologin@docker
   vector:
     image: timberio/vector:0.39.0-alpine
     container_name: vector
