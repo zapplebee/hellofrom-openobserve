@@ -26,6 +26,7 @@ transforms:
           . = merge!(., parsed)
         }
       }
+      del(.container_labels)
 
 sinks:
   openobserve:
