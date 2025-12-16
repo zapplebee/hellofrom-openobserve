@@ -19,7 +19,7 @@ transforms:
       .host = get_hostname!()
 
       # ---- JSON message parsing (Traefik, apps, etc) ----
-      if is_string(.message) && starts_with(trim(.message), "{") {
+      if is_string(.message) && starts_with(strip(.message), "{") {
         parsed, err = parse_json(.message)
         if err == null && is_object(parsed) {
           # merge parsed JSON into root
