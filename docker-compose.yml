@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  openobserve:
+    image: openobserve/openobserve:latest
+    container_name: openobserve
+    restart: unless-stopped
+    environment:
+      ZO_ROOT_USER_EMAIL: admin@example.com
+      ZO_ROOT_USER_PASSWORD: admin123456
+      ZO_DATA_DIR: /data
+      ZO_DATA_RETENTION_DAYS: "15"
+    volumes:
+      - ./openobserve-data:/data
+    networks:
+      - hf_svc_openobserve
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=hf_svc_keycloak
+
+      # Keycloak internal port
+      - traefik.http.services.keycloak.loadbalancer.server.port=5080
+      - traefik.http.routers.openobserve.rule=Host(`openobserve.hellofrom.app`)
+      - traefik.http.routers.openobserve.entrypoints=websecure
+      - traefik.http.routers.openobserve.tls=true
+      - traefik.http.routers.openobserve.tls.certresolver=le
+      - traefik.http.routers.openobserve.priority=10
+      - traefik.http.routers.openobserve.service=openobserve
+  vector:
+    image: timberio/vector:0.39.0-alpine
+    container_name: vector
+    restart: unless-stopped
+    depends_on:
+      - openobserve
+    command: ["vector", "--config", "/etc/vector/vector.yaml"]
+    networks:
+      - hf_svc_openobserve
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+
+volumes:
+  openobserve-data: {}
+
+networks:
+  hf_svc_openobserve:
+    external: true
+    name: hf_svc_openobserve

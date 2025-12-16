@@ -1,0 +1,39 @@
+sources:
+  docker_logs:
+    type: docker_logs
+    docker_host: "unix:///var/run/docker.sock"
+
+transforms:
+  exclude_opted_out:
+    type: filter
+    inputs: [docker_logs]
+    condition: >
+      (
+        !exists(.container_labels.openobserve_exclude) ||
+        downcase!(to_string!(.container_labels.openobserve_exclude)) != "true"
+      ) &&
+      .container_name != "vector" &&
+      .container_name != "openobserve"
+
+  enrich:
+    type: remap
+    inputs: [exclude_opted_out]
+    source: |
+      .service = .container_labels."com.docker.compose.service" ?? .container_name
+      .compose_project = .container_labels."com.docker.compose.project" ?? null
+      .host = get_hostname!()
+
+sinks:
+  openobserve:
+    type: http
+    inputs: [enrich]
+    uri: "http://openobserve:5080/api/default/docker/_json"
+    method: post
+    encoding:
+      codec: json
+    auth:
+      strategy: basic
+      user: "admin@example.com"
+      password: "admin123456"
+    request:
+      retry_max_duration_secs: 300
