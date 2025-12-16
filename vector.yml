@@ -13,9 +13,19 @@ transforms:
     type: remap
     inputs: [exclude_opted_out]
     source: |
+      # Common metadata
       .service = get(.container_labels, ["com.docker.compose.service"]) ?? .container_name
       .compose_project = get(.container_labels, ["com.docker.compose.project"]) ?? null
       .host = get_hostname!()
+
+      # ---- JSON message parsing (Traefik, apps, etc) ----
+      if is_string(.message) && starts_with(trim(.message), "{") {
+        parsed, err = parse_json(.message)
+        if err == null && is_object(parsed) {
+          # merge parsed JSON into root
+          . = merge(., parsed)
+        }
+      }
 
 sinks:
   openobserve:
