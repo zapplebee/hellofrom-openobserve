@@ -23,7 +23,7 @@ transforms:
         parsed, err = parse_json(.message)
         if err == null && is_object(parsed) {
           # merge parsed JSON into root
-          . = merge(., parsed)
+          . = merge!(., parsed)
         }
       }
 
